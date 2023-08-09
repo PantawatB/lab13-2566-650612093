@@ -1,41 +1,42 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { MovieRow } from "@/components/MovieRow";
+import { movieDB } from "@/libs/movieDB";
 
-export default function SearchPage() {
-  const [searchInput, setSearchInput] = useState("");
+export default function SearchResultPage({ params }) {
+  //tip1 : before filtering movie, replace all "%20" with " " (space) in the input
+  // const processedSearchInput = ...
+  const searchInput = params.searchInput;
+  const processedSearchInput = searchInput.replaceAll("%20", " ");
 
-  //A hook that helps navigating each route programmatically
-  const router = useRouter();
+  // tip2 : Use "includes" string method to check substring
+  // Example : "ABC".includes("AB") -> return true
 
-  const searchInputOnChange = (event) => {
-    setSearchInput(event.target.value);
-  };
-
-  const searchInputOnKeyUp = (event) => {
-    if (event.key === "Enter") searchBtnOnClick();
-  };
-
-  const searchBtnOnClick = () => {
-    router.push("/search/" + searchInput);
-  };
+  // tip3 : To implement case insensitive searching, use "toLocaleLowerCase" string method
+  // to convert movie title and searchInput to lower case
+  const filteredMovies = movieDB.filter((movie) =>
+    movie.title.toLowerCase().includes(processedSearchInput.toLowerCase())
+  );
 
   return (
     <div>
-      <p className="fw-bold fs-4 text-center">Search Movie</p>
-      <div className="d-flex gap-2">
-        <input
-          className="form-control"
-          placeholder="Search movie..."
-          onChange={searchInputOnChange}
-          onKeyUp={searchInputOnKeyUp}
-          value={searchInput}
+      <p className="fw-bold fs-4 text-center my-0">
+        Searching &quot; {processedSearchInput} &quot;
+      </p>
+      <p className="fw-bold fs-4 text-center">
+        Found {filteredMovies.length} result(s)
+      </p>
+      {/* Use  "filteredMovies" variable to map-loop rendering MovieRow component */}
+      {filteredMovies.map((movie, i) => (
+        <MovieRow
+          key={movie.id}
+          id={movie.id}
+          title={movie.title}
+          detail={movie.detail}
+          rating={movie.rating}
+          number={i + 1}
         />
-        <button className="btn btn-primary" onClick={searchBtnOnClick}>
-          Search
-        </button>
-      </div>
+      ))}
     </div>
   );
 }
